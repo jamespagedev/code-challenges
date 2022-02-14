@@ -17,6 +17,7 @@ function longestPalindrome(s) {
 
   //------------------------------- variable(s) ------------------------------
   let longestPal = s[0];
+  const digitTracker = {}; // key === letter, value === [array of indexNumbers pointing to digits inside the string]
 
   //--------------------------- helper function(s) ---------------------------
   function isPalindrome(subStr) {
@@ -28,53 +29,18 @@ function longestPalindrome(s) {
 
   //---------------------------------- main ----------------------------------
   for (let i = 0; i < s.length; i++) {
-    let isIndexesMoved = true;
-    let leftI = i === 0 ? 0 : i - 1;
-    let rightI = i === s.length - 1 ? i : i + 1;
-    while (isIndexesMoved) {
-      let isPalFound = false;
-      let subStrLeft = s.substring(leftI, i + 1);
-      let subStrRight = s.substring(i, rightI + 1);
-      let subStrFull = s.substring(leftI, rightI + 1);
-
-      // check index to left
-      if (isPalindrome(subStrLeft)) {
-        isPalFound = true;
-        if (subStrLeft.length > longestPal.length) {
-          longestPal = subStrLeft;
-        }
-      }
-
-      // check index to right
-      if (isPalindrome(subStrRight)) {
-        isPalFound = true;
-        if (subStrRight.length > longestPal.length) {
-          longestPal = subStrRight;
-        }
-      }
-
-      // check left to right
-      if (isPalindrome(subStrFull)) {
-        isPalFound = true;
-        if (subStrFull.length > longestPal.length) {
-          longestPal = subStrFull;
-        }
-      }
-
-      // update leftI and rightI as needed
-      if (
-        rightI !== s.length - 1 &&
-        subStrFull.length % 2 === 0 &&
-        isPalFound
-      ) {
-        // if subStrFull length is even and rightI is not (subStrFull.length-1) and isPalFound
-        rightI++;
-      } else if (leftI !== 0 && subStrFull.length % 2 === 1) {
-        // else if subStrFull length is odd and leftI is not 0
-        leftI--;
-      } else {
-        isIndexesMoved = false;
-      }
+    if (digitTracker.hasOwnProperty(s[i])) {
+      // This digit has already been found in the string before
+      digitTracker[s[i]].forEach((letterIndex) => {
+        const possiblePal = s.substring(letterIndex, i + 1);
+        if (isPalindrome(possiblePal) && longestPal.length < possiblePal.length)
+          // note: change < to <= to get aba instead of bab in the example
+          longestPal = possiblePal;
+      });
+      digitTracker[s[i]].push(i);
+    } else {
+      // This digit has not been found yet in the string
+      digitTracker[s[i]] = [i];
     }
   }
   return longestPal;
@@ -97,5 +63,6 @@ console.log(longestPalindrome("cabaaba")); // "abaaba"
 console.log(longestPalindrome("abaabac")); // "abaaba"
 console.log(longestPalindrome("abcbc")); // "bcb"
 console.log(longestPalindrome("abccba")); // "abccba"
-console.log(longestPalindrome("abcxcba")); // "cxc"
+console.log(longestPalindrome("abcxcba")); // "abcxcba"
 console.log(longestPalindrome("abcxycba")); // "a"
+console.log(longestPalindrome("abcba")); // "abcba"
